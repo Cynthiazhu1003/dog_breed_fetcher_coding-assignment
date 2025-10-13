@@ -2,17 +2,20 @@ package dogapi;
 
 import java.util.List;
 
+
 public class Main {
 
     public static void main(String[] args) {
         String breed = "hound";
         BreedFetcher breedFetcher = new CachingBreedFetcher(new BreedFetcherForLocalTesting());
+
         int result = getNumberOfSubBreeds(breed, breedFetcher);
         System.out.println(breed + " has " + result + " sub breeds");
 
         breed = "cat";
         result = getNumberOfSubBreeds(breed, breedFetcher);
         System.out.println(breed + " has " + result + " sub breeds");
+
     }
 
     /**
@@ -27,8 +30,7 @@ public class Main {
         try {
             List<String> subBreeds = breedFetcher.getSubBreeds(breed);
             return subBreeds.size();
-        } catch (BreedNotFoundException e) {
-            // If breed doesn't exist, return 0 as specified in documentation
+        } catch (BreedFetcher.BreedNotFoundException e) {
             return 0;
         }
     }
