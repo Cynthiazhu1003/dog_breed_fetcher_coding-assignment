@@ -25,34 +25,34 @@ public class DogApiBreedFetcher implements BreedFetcher {
      */
     @Override
     public List<String> getSubBreeds(String breed) throws BreedNotFoundException {
-        String url = "https://dog.ceo/api/breed/" + breed + "/list";
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
+            String url = "https://dog.ceo/api/breed/" + breed + "/list";
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    throw new BreedNotFoundException(breed);
+                }
+
+                String responseBody = response.body().string();
+                JSONObject jsonResponse = new JSONObject(responseBody);
+
+                if (!"success".equals(jsonResponse.optString("status", ""))) {
+                    throw new BreedNotFoundException(breed);
+                }
+
+                JSONArray subBreedsArray = jsonResponse.getJSONArray("message");
+                List<String> subBreeds = new ArrayList<>();
+
+                for (int i = 0; i < subBreedsArray.length(); i++) {
+                    subBreeds.add(subBreedsArray.getString(i));
+                }
+
+                return subBreeds;
+
+            } catch (IOException e) {
                 throw new BreedNotFoundException(breed);
             }
-
-            String responseBody = response.body().string();
-            JSONObject jsonResponse = new JSONObject(responseBody);
-
-            if ("error".equals(jsonResponse.getString("status"))) {
-                throw new BreedNotFoundException(breed);
-            }
-
-            JSONArray subBreedsArray = jsonResponse.getJSONArray("message");
-            List<String> subBreeds = new ArrayList<>();
-
-            for (int i = 0; i < subBreedsArray.length(); i++) {
-                subBreeds.add(subBreedsArray.getString(i));
-            }
-
-            return subBreeds;
-
-        } catch (IOException e) {
-            throw new BreedNotFoundException(breed);
-        }
     }
 }
